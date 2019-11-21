@@ -91,3 +91,8 @@ int dd_printf(const char *__restrict fmt, ...) {
 
     return 0;
 }
+
+/* getchar for direct driver interface */
+int dd_getchar(void) {
+    return alt_getchar();
+}

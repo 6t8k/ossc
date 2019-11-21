@@ -59,7 +59,9 @@ alt_getchar(void)
     ALT_DRIVER_READ_EXTERNS(ALT_STDIN_DEV);
     char c;
 
-    if (ALT_DRIVER_READ(ALT_STDIN_DEV, &c, 1, alt_fd_list[STDIN_FILENO].fd_flags) <= 0) {
+    // We don't require flags for our purposes; skip alt_fd_list.
+    //if (ALT_DRIVER_READ(ALT_STDIN_DEV, &c, 1, alt_fd_list[STDIN_FILENO].fd_flags) <= 0) {
+    if (ALT_DRIVER_READ(ALT_STDIN_DEV, &c, 1, 0) <= 0) {
         return -1;
     }
     return c;

@@ -34,7 +34,11 @@
 #define VSYNC_THOLD_MIN     10
 #define VSYNC_THOLD_MAX     200
 #define SD_SYNC_WIN_MAX     255
-#define PLL_COAST_MAX       5
+#ifndef _DEBUG2
+    #define PLL_COAST_MAX       5
+#else
+    #define PLL_COAST_MAX       255
+#endif
 #define REVERSE_LPF_MAX     31
 #define COARSE_GAIN_MAX     15
 

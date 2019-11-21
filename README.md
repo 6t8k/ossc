@@ -118,6 +118,11 @@ make clean && make APP_CFLAGS_DEBUG_LEVEL="-DDEBUG" generate_hex
 ~~~~
 NOTE: Fw update functionality via SD card is disabled in debug builds due to code space limitations. If audio support is enabled on debug build, other functionality needs to be disabled as well.
 
+To build additional debugging functionality from 'sync-experiments' branch, run:
+~~~~
+make clean && make APP_CFLAGS_DEBUG_LEVEL="-DDEBUG -DDEBUG2" generate_hex
+~~~~
+
 2. Download memory image via JTAG and open terminal for UART
 ~~~~
 make rv-reprogram && nios2-terminal

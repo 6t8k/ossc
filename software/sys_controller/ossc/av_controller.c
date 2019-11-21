@@ -84,6 +84,87 @@ alt_u8 pcm1862_active;
 alt_u32 pclk_out;
 alt_u32 read_it2(alt_u32 regaddr);
 
+#ifdef _DEBUG2
+#define NONBL_STDIN_WA_TH 1000
+struct IntPair {
+    alt_u16 key;
+    alt_u16 val;
+};
+
+char action_char = 0;
+int stdin_wa_cycles = 0;
+int loop_ctr = 0;
+
+static alt_u16 prompt_int(char *prompt) {
+    alt_u16 ret = 0;
+    char cmd_buf[2] = {0};
+
+    printf(prompt);
+    cmd_buf[0] = getchar();
+    printf("%c", cmd_buf[0]);
+    cmd_buf[1] = getchar();
+    printf("%c", cmd_buf[1]);
+    printf(" OK\n");
+
+    sscanf(cmd_buf, "%hx", &ret);
+    return ret;
+}
+
+static struct IntPair prompt_key() {
+    return (struct IntPair) {.key = prompt_int("key? "), .val = 0};
+}
+
+static struct IntPair prompt_key_and_val() {
+    return (struct IntPair) {.key = prompt_key().key, .val = prompt_int("val? ")};
+}
+
+static void interactive_cli() {
+    if(stdin_wa_cycles == NONBL_STDIN_WA_TH) {
+        printf("action? ");
+        action_char = getchar();
+        printf("%c", action_char);
+
+        switch(action_char){
+        case '1':
+            printf(" OK (TVP_READREG)\n");
+            struct IntPair key = prompt_key();
+            printf("%x\n", tvp_readreg(key.key));
+            break;
+        case '2':
+            printf(" OK (TVP_WRITEREG)\n");
+            struct IntPair pair = prompt_key_and_val();
+            tvp_writereg(pair.key, pair.val);
+            break;
+        case '3':
+            video_modes[5].h_total = 1250;
+            break;
+        case '4':
+            video_modes[5].h_total = 431;
+            break;
+        case '5':
+            do {
+                tvp_writereg(0x21, loop_ctr); //HSOUTSTART
+                loop_ctr++;
+                usleep(6000000);
+                printf("%x\n", loop_ctr);
+            }
+            while (loop_ctr <= 0xff);
+            break;
+        default:
+            printf(" skipped\n");
+            break;
+        }
+
+        printf("done\n");
+    }
+
+    stdin_wa_cycles++;
+    if(stdin_wa_cycles > NONBL_STDIN_WA_TH) {
+        stdin_wa_cycles = 0;
+    }
+}
+#endif
+
 // Manually (see cyiv-51005.pdf) or automatically (MIF/HEX from PLL megafunction) generated config may not
 // provide fully correct scan chain data (e.g. mismatches in C3) and lead to incorrect PLL configuration.
 // To get correct scan chain data, do the following:
@@ -957,8 +1038,10 @@ int main()
         sniprintf(row1, LCD_ROW_LEN+1, "OSSC  fw. %u.%.2u" FW_SUFFIX1 FW_SUFFIX2, FW_VER_MAJOR, FW_VER_MINOR);
 #ifndef DEBUG
         strncpy(row2, "2014-2019  marqs", LCD_ROW_LEN+1);
-#else
+#elif !defined(_DEBUG2)
         strncpy(row2, "** DEBUG BUILD *", LCD_ROW_LEN+1);
+#else
+        strncpy(row2, "** DEBUG2 BUILD ", LCD_ROW_LEN+1);
 #endif
         osd->osd_config.status_refresh = 1;
         lcd_write_status();
@@ -1211,6 +1294,10 @@ int main()
                 break;
             }
         }
+
+#ifdef _DEBUG2
+        interactive_cli();
+#endif
 
         usleep(300);    // Avoid executing mainloop multiple times per vsync
     }

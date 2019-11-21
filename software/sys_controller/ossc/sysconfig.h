@@ -36,6 +36,10 @@
 // use reduced printf
 //#define printf alt_printf
 #define printf dd_printf
+#define getchar dd_getchar
+#ifdef DEBUG2
+#define _DEBUG2
+#endif
 #endif
 
 #define WAITLOOP_SLEEP_US   10000

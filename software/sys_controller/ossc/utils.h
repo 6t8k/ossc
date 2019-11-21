@@ -31,5 +31,6 @@ alt_u32 bswap32(alt_u32 w);
 unsigned long crc32(unsigned char *input_data, unsigned long input_data_length, int do_initialize);
 
 int dd_printf(const char *__restrict fmt, ...);
+int dd_getchar(void);
 
 #endif

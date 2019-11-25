@@ -94,8 +94,9 @@ struct IntPair {
 char action_char = 0;
 int stdin_wa_cycles = 0;
 int loop_ctr = 0;
+int hpll_ctrl = 0;
 
-static alt_u16 prompt_int(char *prompt) {
+static alt_u16 prompt_int(const char *prompt) {
     alt_u16 ret = 0;
     char cmd_buf[2] = {0};
 
@@ -142,13 +143,49 @@ static void interactive_cli() {
             video_modes[5].h_total = 431;
             break;
         case '5':
+            video_modes[5].h_total = 1409;
+            break;
+        case '6':
+            loop_ctr = 0;
             do {
-                tvp_writereg(0x21, loop_ctr); //HSOUTSTART
+                tvp_writereg(TVP_HSOUTSTART, loop_ctr);
                 loop_ctr++;
                 usleep(6000000);
                 printf("%x\n", loop_ctr);
             }
             while (loop_ctr <= 0xff);
+            tvp_writereg(TVP_HSOUTSTART, 0x0d);
+            break;
+        case '7':
+            loop_ctr = 0;
+            do {
+                tvp_writereg(TVP_HSOUTWIDTH, loop_ctr);
+                loop_ctr++;
+                usleep(6000000);
+                printf("%x\n", loop_ctr);
+            }
+            while (loop_ctr <= 0xff);
+            tvp_writereg(TVP_HSOUTWIDTH, 0x20);
+            break;
+        case '8':
+            loop_ctr = 0;
+            do {
+                tvp_writereg(TVP_VSOUTALIGN, loop_ctr);
+                loop_ctr++;
+                usleep(6000000);
+                printf("%x\n", loop_ctr);
+            }
+            while (loop_ctr <= 0xff);
+            tvp_writereg(TVP_VSOUTALIGN, 0x10);
+            break;
+        case '9':
+            hpll_ctrl = 0xf8;
+            do {
+                usleep(15000000);
+                printf("%x\n", hpll_ctrl);
+                tvp_writereg(TVP_HPLLCTRL, hpll_ctrl);
+                hpll_ctrl -= 8;
+            } while (hpll_ctrl > 0);
             break;
         default:
             printf(" skipped\n");
